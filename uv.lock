@@ -73,7 +73,7 @@ wheels = [
 ]
 
 [[package]]
-name = "pdf-visual-diff"
+name = "pdf-diff-viewer"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [

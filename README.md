@@ -10,9 +10,9 @@ A high-performance CLI tool designed for precise visual comparison of PDF docume
 - **Robust Diffing Engine**: Leverages an 8x8 average visual hashing algorithm combined with `difflib.SequenceMatcher` to find optimal alignments between document versions.
 - **Optically Correct Layout**: Tracks original document spacing in PDF points (`pt`) to ensure the generated diff maintains the exact visual rhythm and proportions of the source files.
 - **Interactive Web Report**:
-    - **Dual View Modes**: Switch between a side-by-side **Split View** and a vertically stacked **Unified View**.
-    - **Smart Highlights**: Uses semi-transparent overlays (`#f002` / `#0f02`) for a modern, non-obstructive diff visualization.
-    - **Side-Aware Page Breaks**: Provides precise markers for page boundaries that adapt based on whether the break occurs in one or both documents.
+  - **Dual View Modes**: Switch between a side-by-side **Split View** and a vertically stacked **Unified View**.
+  - **Smart Highlights**: Uses semi-transparent overlays (`#f002` / `#0f02`) for a modern, non-obstructive diff visualization.
+  - **Side-Aware Page Breaks**: Provides precise markers for page boundaries that adapt based on whether the break occurs in one or both documents.
 - **Chromium Integration**: Built-in `--open` flag to quickly render and view reports in Chromium's app mode.
 
 ## Quick Run (One-off)
@@ -20,7 +20,7 @@ A high-performance CLI tool designed for precise visual comparison of PDF docume
 You can run the tool directly from GitHub without cloning or installing:
 
 ```bash
-uvx --from git+https://github.com/aziis98/pdf-visual-diff.git pdf-visual-diff <old.pdf> <new.pdf> --open
+uvx --from git+https://github.com/aziis98/pdf-diff-viewer.git pdf-diff-viewer <old.pdf> <new.pdf> --open
 ```
 
 ## Installation
@@ -41,7 +41,9 @@ uv run python main.py <old.pdf> <new.pdf> -o report.html
 ```
 
 ### Auto-Open Mode
+
 To generate a temporary report and open it immediately in Chromium:
+
 ```bash
 uv run python main.py <old.pdf> <new.pdf> --open
 ```
@@ -55,4 +57,5 @@ uv run python main.py <old.pdf> <new.pdf> --open
 5. **Generation**: A self-contained HTML file is produced with all assets embedded as Base64 strings.
 
 ---
-*Developed with a focus on visual fidelity and a professional user experience.*
+
+_Developed with a focus on visual fidelity and a professional user experience._
