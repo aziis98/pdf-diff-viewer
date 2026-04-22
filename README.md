@@ -20,7 +20,7 @@ A high-performance CLI tool designed for precise visual comparison of PDF docume
 You can run the tool directly from GitHub without cloning or installing:
 
 ```bash
-uvx --from git+https://github.com/aziis98/pdf-diff-viewer.git pdf-diff-viewer <old.pdf> <new.pdf> --open
+uvx --from git+https://github.com/aziis98/pdf-diff-viewer.git pdf-diff-viewer --open <old.pdf> <new.pdf>
 ```
 
 ## Installation
@@ -45,7 +45,7 @@ uv run python main.py <old.pdf> <new.pdf> -o report.html
 To generate a temporary report and open it immediately in Chromium:
 
 ```bash
-uv run python main.py <old.pdf> <new.pdf> --open
+uv run python main.py --open <old.pdf> <new.pdf>
 ```
 
 ## How It Works
