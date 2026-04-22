@@ -42,20 +42,20 @@ uv run python main.py <old.pdf> <new.pdf> -o report.html
 
 ### Auto-Open Mode
 
-To generate a temporary report and open it immediately in Chromium:
+To generate a temporary report and open it immediately in Chromium, Google Chrome or the default browser:
 
 ```bash
 uv run python main.py --open <old.pdf> <new.pdf>
 ```
 
-## How It Works
+## Algorithm
 
 1. **Rasterization**: Pages are rendered at a configurable DPI (default: 150).
+
 2. **Segmentation**: The tool identifies horizontal gaps to slice the document into discrete blocks.
+
 3. **Hashing**: Each block is converted to an 8x8 bitmask representing its visual essence.
+
 4. **Alignment**: The sequences of hashes are compared to find the most logical set of changes.
+
 5. **Generation**: A self-contained HTML file is produced with all assets embedded as Base64 strings.
-
----
-
-_Developed with a focus on visual fidelity and a professional user experience._

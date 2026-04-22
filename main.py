@@ -468,6 +468,7 @@ def main():
         browsers = [
             "chromium",
             "google-chrome",
+            "microsoft-edge",
         ]
         launched = False
         for b in browsers:
@@ -487,7 +488,7 @@ def main():
             print("No Chromium-based browser found. Opening in default browser...")
             import webbrowser
 
-            webbrowser.open(f"file://{output_path}")
+            webbrowser.open_new(f"file://{output_path}")
 
     print("Done!")
 
