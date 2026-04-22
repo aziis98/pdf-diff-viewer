@@ -13,3 +13,6 @@ dependencies = [
 
 [project.scripts]
 pdf-diff-viewer = "main:main"
+
+[tool.setuptools]
+py-modules = ["main"]
