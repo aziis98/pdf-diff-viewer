@@ -6,14 +6,11 @@ A high-performance CLI tool designed for precise visual comparison of PDF docume
 
 ## Key Features
 
-- **Visual Block Segmentation**: Intelligently segments PDF pages into logical content blocks based on background color analysis.
-- **Robust Diffing Engine**: Leverages an 8x8 average visual hashing algorithm combined with `difflib.SequenceMatcher` to find optimal alignments between document versions.
-- **Optically Correct Layout**: Tracks original document spacing in PDF points (`pt`) to ensure the generated diff maintains the exact visual rhythm and proportions of the source files.
-- **Interactive Web Report**:
-  - **Dual View Modes**: Switch between a side-by-side **Split View** and a vertically stacked **Unified View**.
-  - **Smart Highlights**: Uses semi-transparent overlays (`#f002` / `#0f02`) for a modern, non-obstructive diff visualization.
-  - **Side-Aware Page Breaks**: Provides precise markers for page boundaries that adapt based on whether the break occurs in one or both documents.
-- **Chromium Integration**: Built-in `--open` flag to quickly render and view reports in Chromium's app mode.
+- **Block-Based Visual Analysis**: Intelligently segments the document into logical content blocks to identify deletions, insertions, and modifications within their visual context.
+- **Dynamic Layout Options**: Seamlessly toggle between a side-by-side **Split View** and a stacked **Unified View**.
+- **Accurate Document Rhythm**: Preserves original vertical spacing for a natural reading experience.
+- **Modern UI Components**: Features polished diff tints and side-aware page breaks.
+- **Zero-Install Execution**: Run the tool instantly from a remote repository via `uvx`.
 
 ## Quick Run (One-off)
 
@@ -50,12 +47,24 @@ uv run python main.py --open <old.pdf> <new.pdf>
 
 ## Algorithm
 
-1. **Rasterization**: Pages are rendered at a configurable DPI (default: 150).
+The tool follows a multi-stage pipeline to ensure visual fidelity and structural accuracy:
 
-2. **Segmentation**: The tool identifies horizontal gaps to slice the document into discrete blocks.
+1. **Rasterization**: Both documents are rendered at a configurable DPI (default: 150) using `PyMuPDF`. This ensures that even vector elements and images are accurately represented.
 
-3. **Hashing**: Each block is converted to an 8x8 bitmask representing its visual essence.
+2. **Segmentation**: The tool performs a vertical scan of the rasterized pages to detect horizontal gaps in the background color. Content is grouped into logical "blocks" (paragraphs, headers, etc.). A minimum gap threshold (10px) is used to avoid splitting lines within a single paragraph.
 
-4. **Alignment**: The sequences of hashes are compared to find the most logical set of changes.
+3. **Visual Hashing**: Each block is converted to an **8x8 average visual hash**. This compact representation allows for fast and fuzzy comparison, robust against minor rendering differences.
 
-5. **Generation**: A self-contained HTML file is produced with all assets embedded as Base64 strings.
+4. **Alignment**: The tool uses `difflib.SequenceMatcher` to find the optimal alignment between the two sequences of block hashes, identifying deletions, insertions, and replacements.
+
+5. **Spacing Normalization**: To keep the diff "compactish", the tool tracks both top and bottom padding for every block, using the minimum required spacing in Split View and precise PDF points (`pt`) for optical correctness.
+
+6. **Generation**: A single, self-contained HTML file is produced. Images are embedded as Base64 strings, and a glassmorphism-inspired UI provides the interactive diffing experience.
+
+## Future Work
+
+- **Multi-Column Support**: Improve segmentation for complex layouts, multi-column, tables, figures, etc. Maybe something like a flood fill algorithm to detect connected components.
+
+- **CI/CD Integration**: Add a library for programmatic use in code and CI/CD pipelines for automated visual regression testing. Maybe provide a GitHub Action example.
+
+- **Performance**: Benchmark and optimize the tool for very large (100+ page) documents.
