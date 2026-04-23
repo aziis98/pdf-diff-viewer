@@ -10,6 +10,15 @@ import numpy as np
 from PIL import Image
 
 
+def get_hamming_distance(hash1, hash2):
+    return np.count_nonzero(hash1 != hash2)
+
+
+def get_similarity(hash1, hash2):
+    distance = get_hamming_distance(hash1, hash2)
+    return 1.0 - (distance / 64.0)
+
+
 class Block:
     def __init__(self, image, page_num, block_idx, top_padding=0, bottom_padding=0):
         self.image = image
@@ -27,19 +36,22 @@ class Block:
         diff = pixels > avg
         return diff.flatten()
 
+    def __eq__(self, other):
+        if not isinstance(other, Block):
+            return False
+        return get_similarity(self.hash, other.hash) >= 0.95
+
+    def __hash__(self):
+        # Forced constant hash to ensure SequenceMatcher uses __eq__
+        return 0
+
+    def is_identical(self, other):
+        return np.array_equal(self.hash, other.hash)
+
     def get_base64(self):
         buffered = io.BytesIO()
         self.image.save(buffered, format="PNG")
         return base64.b64encode(buffered.getvalue()).decode()
-
-
-def get_hamming_distance(hash1, hash2):
-    return np.count_nonzero(hash1 != hash2)
-
-
-def get_similarity(hash1, hash2):
-    distance = get_hamming_distance(hash1, hash2)
-    return 1.0 - (distance / 64.0)
 
 
 def extract_blocks(pdf_path, dpi=150):
@@ -60,8 +72,8 @@ def extract_blocks(pdf_path, dpi=150):
         rows_is_bg = np.all(is_bg, axis=1)
 
         # Segmentation settings
-        min_gap = 10  # pixels of white space to split blocks
-        min_block_height = 5
+        min_gap = 5  # pixels of white space to split blocks
+        min_block_height = 1
 
         page_blocks = []
         last_block_end = 0
@@ -362,13 +374,26 @@ def generate_html(blocks_a, blocks_b, opcodes, output_path, dpi=150):
                 content.extend(check_page_break(block_a.page_num, block_b.page_num))
 
                 pt = min(block_a.top_padding, block_b.top_padding)
-                content.append(f"""
-                <div class="row">
-                  <div class="margin"></div>
-                  {render_block(block_a, "equal", pt=pt)}
-                  <div class="margin"></div>
-                </div>
-                """)
+
+                if block_a == block_b:
+                    content.append(
+                        f"""
+                    <div class="row">
+                      <div class="margin"></div>
+                      {render_block(block_a, "equal", pt=pt)}
+                      <div class="margin"></div>
+                    </div>
+                    """
+                    )
+                else:
+                    content.append(
+                        f"""
+                    <div class="row">
+                      {render_block(block_a, "replace-old", pt=pt)}
+                      {render_block(block_b, "replace-new", pt=pt)}
+                    </div>
+                    """
+                    )
 
         elif tag == "delete":
             for k in range(i1, i2):
@@ -450,10 +475,7 @@ def main():
     blocks_b = extract_blocks(args.pdf2, dpi=args.dpi)
 
     print(f"Comparing {len(blocks_a)} vs {len(blocks_b)} blocks...")
-    hashes_a = [b.hash.tobytes() for b in blocks_a]
-    hashes_b = [b.hash.tobytes() for b in blocks_b]
-
-    matcher = difflib.SequenceMatcher(None, hashes_a, hashes_b)
+    matcher = difflib.SequenceMatcher(None, blocks_a, blocks_b)
     opcodes = matcher.get_opcodes()
 
     output_path = args.output
