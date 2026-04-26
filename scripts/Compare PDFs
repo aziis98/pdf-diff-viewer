@@ -25,8 +25,11 @@ if [[ "$COUNT" -ne 2 ]]; then
     exit 1
 fi
 
-FILE1="${CLEAN_FILES[0]}"
-FILE2="${CLEAN_FILES[1]}"
+# Sort by modification time (oldest first) to ensure older file is the "base"
+mapfile -t SORTED_FILES < <(ls -tr "${CLEAN_FILES[@]}")
+
+FILE1="${SORTED_FILES[0]}"
+FILE2="${SORTED_FILES[1]}"
 
 # Check both files are PDFs
 for f in "$FILE1" "$FILE2"; do
