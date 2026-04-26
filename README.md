@@ -55,6 +55,25 @@ Example usage with `zenity`:
 uv run python main.py old.pdf new.pdf -o diff.html --progress | zenity --progress --text="Processing PDFs..." --auto-close
 ```
 
+## Nautilus Integration
+
+If you are using the Nautilus file manager (GNOME), you can add a "Compare PDFs" entry to your right-click menu.
+
+1. Run the following command to install the script:
+
+   ```bash
+   mkdir -p ~/.local/share/nautilus/scripts/
+   cp "scripts/Compare PDFs" ~/.local/share/nautilus/scripts/
+   ```
+
+2. Ensure the script is executable:
+
+   ```bash
+   chmod +x ~/.local/share/nautilus/scripts/"Compare PDFs"
+   ```
+
+Now you can select two PDF files in Nautilus, right-click, and select **Scripts > Compare PDFs**.
+
 ## Algorithm
 
 The tool follows a multi-stage pipeline to ensure visual fidelity and structural accuracy:

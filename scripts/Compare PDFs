@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+
+# Nautilus script: Compare PDFs with pdf-diff-viewer
+# Place in: ~/.local/share/nautilus/scripts/
+# Then: chmod +x ~/.local/share/nautilus/scripts/"Compare PDFs with pdf-diff-viewer"
+
+set -euo pipefail
+
+# Collect selected files into an array
+mapfile -t FILES <<< "$NAUTILUS_SCRIPT_SELECTED_FILE_PATHS"
+
+# Remove empty trailing entries (mapfile can leave one)
+CLEAN_FILES=()
+for f in "${FILES[@]}"; do
+    [[ -n "$f" ]] && CLEAN_FILES+=("$f")
+done
+
+COUNT=${#CLEAN_FILES[@]}
+
+if [[ "$COUNT" -ne 2 ]]; then
+    zenity --error \
+        --title="PDF Diff Viewer" \
+        --text="Please select <b>exactly 2 PDF files</b> to compare.\n\nYou selected: <b>$COUNT</b> file(s)." \
+        --width=320
+    exit 1
+fi
+
+FILE1="${CLEAN_FILES[0]}"
+FILE2="${CLEAN_FILES[1]}"
+
+# Check both files are PDFs
+for f in "$FILE1" "$FILE2"; do
+    if [[ "${f,,}" != *.pdf ]]; then
+        zenity --error \
+            --title="PDF Diff Viewer" \
+            --text="Both selected files must be <b>.pdf</b> files.\n\n<i>$(basename "$f")</i> does not appear to be a PDF." \
+            --width=320
+        exit 1
+    fi
+done
+
+uvx --from git+https://github.com/aziis98/pdf-diff-viewer.git \
+    pdf-diff-viewer --progress --open "$FILE1" "$FILE2" | \
+    zenity --progress --text="Processing PDFs..." --auto-close
