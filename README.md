@@ -45,6 +45,16 @@ To generate a temporary report and open it immediately in Chromium, Google Chrom
 uv run python main.py --open <old.pdf> <new.pdf>
 ```
 
+### GUI Progress Integration
+
+You can use the `--progress` flag to integrate with tools like `zenity` to display a progress bar. When this flag is passed, all regular output is suppressed and only the processing percentage from 0 to 100 is printed to stdout.
+
+Example usage with `zenity`:
+
+```bash
+uv run python main.py old.pdf new.pdf -o diff.html --progress | zenity --progress --text="Processing PDFs..." --auto-close
+```
+
 ## Algorithm
 
 The tool follows a multi-stage pipeline to ensure visual fidelity and structural accuracy:

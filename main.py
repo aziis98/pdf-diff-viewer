@@ -54,7 +54,7 @@ class Block:
         return base64.b64encode(buffered.getvalue()).decode()
 
 
-def extract_blocks(pdf_path, dpi=150):
+def extract_blocks(pdf_path, dpi=150, progress_callback=None):
     doc = fitz.open(pdf_path)
     blocks = []
 
@@ -122,6 +122,9 @@ def extract_blocks(pdf_path, dpi=150):
         # Set final block's bottom padding for the page
         if page_blocks:
             page_blocks[-1].bottom_padding = len(rows_is_bg) - last_block_end
+
+        if progress_callback:
+            progress_callback()
 
     return blocks
 
@@ -466,15 +469,36 @@ def main():
         help="Open the report in Chromium and save to /tmp",
     )
     parser.add_argument("--dpi", type=int, default=150, help="DPI for rasterization")
+    parser.add_argument(
+        "--progress",
+        action="store_true",
+        help="Print progress percentages (0-100) and suppress other output (for zenity)",
+    )
 
     args = parser.parse_args()
 
-    print(f"Extracting blocks from {args.pdf1}...")
-    blocks_a = extract_blocks(args.pdf1, dpi=args.dpi)
-    print(f"Extracting blocks from {args.pdf2}...")
-    blocks_b = extract_blocks(args.pdf2, dpi=args.dpi)
+    def info(msg):
+        if not args.progress:
+            print(msg)
 
-    print(f"Comparing {len(blocks_a)} vs {len(blocks_b)} blocks...")
+    doc1_len = len(fitz.open(args.pdf1))
+    doc2_len = len(fitz.open(args.pdf2))
+    total_pages = doc1_len + doc2_len
+    pages_processed = [0]
+
+    def report_progress():
+        if args.progress:
+            pages_processed[0] += 1
+            # Reserve the last 5% for diffing and generation
+            pct = int((pages_processed[0] / total_pages) * 95)
+            print(pct, flush=True)
+
+    info(f"Extracting blocks from {args.pdf1}...")
+    blocks_a = extract_blocks(args.pdf1, dpi=args.dpi, progress_callback=report_progress)
+    info(f"Extracting blocks from {args.pdf2}...")
+    blocks_b = extract_blocks(args.pdf2, dpi=args.dpi, progress_callback=report_progress)
+
+    info(f"Comparing {len(blocks_a)} vs {len(blocks_b)} blocks...")
     matcher = difflib.SequenceMatcher(None, blocks_a, blocks_b)
     opcodes = matcher.get_opcodes()
 
@@ -483,8 +507,11 @@ def main():
         fd, output_path = tempfile.mkstemp(suffix="-pdf-diff.html")
         os.close(fd)
 
-    print(f"Generating diff report: {output_path}...")
+    info(f"Generating diff report: {output_path}...")
     generate_html(blocks_a, blocks_b, opcodes, output_path, dpi=args.dpi)
+
+    if args.progress:
+        print(100, flush=True)
 
     if args.open:
         browsers = [
@@ -500,19 +527,19 @@ def main():
                     stdout=subprocess.DEVNULL,
                     stderr=subprocess.DEVNULL,
                 )
-                print(f"Opening in {b} (app mode)...")
+                info(f"Opening in {b} (app mode)...")
                 launched = True
                 break
             except FileNotFoundError:
                 continue
 
         if not launched:
-            print("No Chromium-based browser found. Opening in default browser...")
+            info("No Chromium-based browser found. Opening in default browser...")
             import webbrowser
 
             webbrowser.open_new(f"file://{output_path}")
 
-    print("Done!")
+    info("Done!")
 
 
 if __name__ == "__main__":
